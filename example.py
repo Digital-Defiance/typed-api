@@ -1,12 +1,3 @@
-# typed-api
-A small, python backend framework that leverages Pythons type hinting to concisely define an api.
-
-I'm drawing tons of inspiration from fastapi. 
-
-What I'm aiming for:
-
-```Python
-
 # type: ignore
 
 import typedAPI
@@ -36,7 +27,3 @@ async def this_is_an_example_endpoint(
 
 if __name__ == "__main__":
     listener.serve(host='127.0.0.1', port=8000)
-  
-```
-
-Despite the name "typedAPI", `# type: ignore` is obligatory until I get around to adapting static analysis tools to this usage of type annotations.
