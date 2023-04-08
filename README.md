@@ -39,6 +39,7 @@ async def get(endpoint: base / "posts"):
                 "content": content
             } for id, title, content in db_entries
         ]
+    }
 
 if __name__ == "__main__":
     listener.serve(host='127.0.0.1', port=8000)
@@ -59,8 +60,7 @@ if __name__ == "__main__":
 6. Refer to the example code above for a basic example of how to use TypedAPI.
     
 
-    
-    }
 
-if __name__ == "__main__":
-    listener.serve(host='127.0.0.1', port=8000)
+# License
+
+This project is licensed under the MIT License
