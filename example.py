@@ -2,9 +2,9 @@
 
 import typedAPI
 
-listener = typedAPI.Server()
+server = typedAPI.Server()
 
-base = typedAPI.Endpoint("/api/v1")
+base = typedAPI.ResourcePath("/api/v1")
 
 MOCK_DB = {
     "id": [1, 2, 3],
@@ -12,9 +12,10 @@ MOCK_DB = {
     "content": ["Aas fadsfads f", "asdfasfdf", "dfasdfsdaf"]
 }
 
-@listener.append
-async def get(endpoint: base / "posts"):
-    
+
+@server.append(protocol='http')
+async def get(resource_path: base / "test" / "{some_id:int}"):
+
     db_values = MOCK_DB.values()
     db_entries = zip(*db_values)
 
@@ -22,7 +23,11 @@ async def get(endpoint: base / "posts"):
         "content-type": "application/json"
     }, {
         "status": "OK",
-        "endpoint": endpoint.path,
+        "resource_path": {
+            "value": str(resource_path),
+            "parameters": resource_path.parameters.dict(),
+            "queries": resource_path.queries.dict()
+        },
         "data": [
             {
                 "id": id,
@@ -33,4 +38,4 @@ async def get(endpoint: base / "posts"):
     }
 
 if __name__ == "__main__":
-    listener.serve(host='127.0.0.1', port=8000)
+    server.listen(host='127.0.0.1', port=8000)
