@@ -29,7 +29,9 @@ class Server(starlette.applications.Starlette):
             resource_path = annotations.get('resource_path', None)
             
             if resource_path is None:
-                raise TypeError
+                raise TypeError("Must specify resource_path.")
+            
+            header_lines = annotations.get('headers', None)
 
             async def wrapper(request):
 
@@ -40,6 +42,14 @@ class Server(starlette.applications.Starlette):
                 path_executer_args = {
                     "resource_path": validated_resource_path
                 }
+
+                if header_lines is not None:
+                    headers_are_valid, data = header_lines.validate(request.headers)
+
+                    if not headers_are_valid:
+                        return starlette.responses.JSONResponse({"detail": f"Invalid header `{data}`"}, status_code=422)
+
+                    path_executer_args["headers"] = data
 
                 status, headers, body = await endpoint_executer(**path_executer_args)
                 

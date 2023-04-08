@@ -21,6 +21,9 @@ type_map = {
 }
 
 
+class Config:
+    extra="allow"
+
 class ResourcePathValue(pydantic.BaseModel):
     parameters: typing.Any
     queries: typing.Any
@@ -48,8 +51,8 @@ class ResourcePath(pathlib.PosixPath):
 
     def create_models(self):
         value = str(self)
-        self.parameters = pydantic.create_model(f"parameters:{value}", **self._parameters)
-        self.queries = pydantic.create_model(f"queries:{value}")
+        self.parameters = pydantic.create_model(f"parameters:{value}", **self._parameters, __config__=Config)
+        self.queries = pydantic.create_model(f"queries:{value}", __config__=Config)
 
 
     def _parse_key(self, key: str):
