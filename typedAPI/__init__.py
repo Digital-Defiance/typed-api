@@ -6,35 +6,39 @@ import starlette.applications
 import starlette.responses
 import uvicorn
 
-class Endpoint:
-    path: str
-    params: dict["str", type]
-    param_pattern: str = r"\[(\w+):\s*(\w+)\]"
+import pathlib
+
+class Endpoint(pathlib.PosixPath):
+    
+    
     type_dict = {
-        'str': str,
-        'int': int
+        'int': int,
+        'str': str
     }
+    
 
-    def __init__(self, path: str):
-        
+    @property
+    def path(self):
+        return str(self)
+    
+    @property
+    def params(self):
+        parameters = {}
 
-        params = {}
+        for name in self.parts:
+            if ":" in name:
+                params = name.split(":")
+                if not len(params) == 2:
+                    raise ValueError("Invalid parameter specification.")
 
-        for param_match in re.findall(self.param_pattern, path):
-            param_name = param_match[0]
-            param_type = param_match[1]
-
-            param_type = self.type_dict.get(param_type, object)
-
-            params[param_name] = param_type
-
-        self.path = path
-        self.params = params
-
+                param_name = params[0].strip()
+                param_type = self.type_dict[params[1].strip()]
+                parameters[param_name] = param_type
+                
+        return parameters
 
 
 class Server(starlette.applications.Starlette):
-    
 
     def serve(self, *args, **kwargs):
         uvicorn.run(self, *args, **kwargs)
@@ -49,6 +53,7 @@ class Server(starlette.applications.Starlette):
 
         if not isinstance(endpoint_annotation, Endpoint):
             raise TypeError("Annotation of `endpoint` must be an `Endpoint` instance.")
+
 
         annotations["endpoint"] = typing.TypedDict("EndpointDefinition", endpoint_annotation.params)
 
@@ -80,8 +85,15 @@ class Server(starlette.applications.Starlette):
     def _handler_wrapper_definition(self):
         pass
 
-    def _method(self, method: str, *args, **kwargs):
-        def decorator(route_executer: typing.Callable):
+
+    @property
+    def append(self, *args, **kwargs):
+        
+        def decorator(route_executer: typing.Callable) -> typing.Callable:
+
+            if route_executer.__name__ not in ["get", "post", "delete", "head", "put"]:
+                raise TypeError("Name of path executer must be an http method: `get`, `post`, etc...")
+
             annotations = typing.get_type_hints(route_executer)
 
             endpoint = self._handle_endpoint_definition(annotations)
@@ -117,23 +129,14 @@ class Server(starlette.applications.Starlette):
                     headers = headers,
                 )
 
-
             wrapper.__annotations__ = annotations
             
             path = path_executer_args["endpoint"].path
-            self.add_route(path, wrapper, methods=[method])
+            
+            self.add_route(path, wrapper, methods=[route_executer.__name__.upper()])
             return wrapper
         return decorator
 
-
-    def __getattr__(self, name: str):
-        if name not in ["get", "post", "delete", "head", "put"]:
-            super().__getattr__(name)
-
-        def method(*args, **kwargs):
-            return self._method(name, *args, **kwargs)
-
-        return method
 
 class Headers:
     def __init__(self, headers):

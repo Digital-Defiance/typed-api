@@ -13,25 +13,32 @@ import typedAPI
 
 listener = typedAPI.Server()
 
-@listener.get()
-async def this_is_an_example_endpoint(
-    endpoint: typedAPI.Endpoint("/"),
-    headers: typedAPI.Headers({
-        "X-Auth-Header": str,
-        "asdasd": int
-    }),
-):
+base = typedAPI.Endpoint("/api/v1")
+
+MOCK_DB = {
+    "id": [1, 2, 3],
+    "title": ["title1", "title2", "title3"],
+    "content": ["Aas fadsfads f", "asdfasfdf", "dfasdfsdaf"]
+}
+
+@listener.append
+async def get(endpoint: base / "posts"):
+    
+    db_values = MOCK_DB.values()
+    db_entries = zip(*db_values)
 
     return 200, {
-        "Set-Cookie": "asdasdsada",
         "content-type": "application/json"
     }, {
         "status": "OK",
         "endpoint": endpoint.path,
-        "data": {
-            "title": "This is a test.",
-            "message": "Typed API is a framework inspired on fastapi. It uses types to define data validation and much more.",
-        }
+        "data": [
+            {
+                "id": id,
+                "title": title,
+                "content": content
+            } for id, title, content in db_entries
+        ]
     }
 
 if __name__ == "__main__":
