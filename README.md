@@ -1,18 +1,19 @@
-# typed-api
-A small, python backend framework that leverages Pythons type hinting to concisely define an api.
+# Typed-API
 
-I'm drawing tons of inspiration from fastapi. 
+A lightweight Python backend framework that leverages Python's type hinting to concisely define an API. Heavily inspired by FastAPI.
 
-What I'm aiming for:
+## Goal
+
+To create a simple and intuitive way to build APIs using Python's type hinting feature.
 
 ```Python
+# typed_api_example.py
 
 # type: ignore
 
 import typedAPI
 
 listener = typedAPI.Server()
-
 base = typedAPI.Endpoint("/api/v1")
 
 MOCK_DB = {
@@ -23,7 +24,6 @@ MOCK_DB = {
 
 @listener.append
 async def get(endpoint: base / "posts"):
-    
     db_values = MOCK_DB.values()
     db_entries = zip(*db_values)
 
@@ -39,11 +39,28 @@ async def get(endpoint: base / "posts"):
                 "content": content
             } for id, title, content in db_entries
         ]
+
+if __name__ == "__main__":
+    listener.serve(host='127.0.0.1', port=8000)
+    
+```
+
+**Note**: Despite the name "TypedAPI", # type: ignore is required until static analysis tools can be adapted to this usage of type annotations.
+
+
+    
+# Usage
+
+1. Import the typedAPI module.
+2. Create an instance of the Server class.
+3. Define your API endpoints using the Endpoint class.
+4. Use the @listener.append decorator to add your route handlers.
+5. Run the server using the listener.serve() method.
+6. Refer to the example code above for a basic example of how to use TypedAPI.
+    
+
+    
     }
 
 if __name__ == "__main__":
     listener.serve(host='127.0.0.1', port=8000)
-  
-```
-
-Despite the name "typedAPI", `# type: ignore` is obligatory until I get around to adapting static analysis tools to this usage of type annotations.
