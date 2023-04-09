@@ -3,6 +3,8 @@
 from re import L
 import pydantic
 
+import typedAPI
+
 
 class Config:
     extra="allow"
@@ -44,11 +46,15 @@ class Headers:
         
         for key, validator in self.validation_of_customs.items():
             header = headers.pop(key)
+            
+            validation = validator(header)
 
-            if not validator(header):
-                return False, key
+            not_ok, data = typedAPI.response.normalise_response(validation)
+            
+            if not_ok:
+                return False, data
 
-            validated_customs[key] = header
+            validated_customs[key] = data
 
         validated_builtins = self.validation_of_builtins(**headers).dict()
 

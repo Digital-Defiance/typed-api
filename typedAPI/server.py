@@ -4,8 +4,82 @@ import typing
 import starlette.applications
 import starlette.responses
 import uvicorn
+import typedAPI
+
+
+
+http_status_codes = {
+    100: "Continue",
+    101: "Switching Protocols",
+    102: "Processing",
+    103: "Early Hints",
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    205: "Reset Content",
+    206: "Partial Content",
+    207: "Multi-Status",
+    208: "Already Reported",
+    226: "IM Used",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Found",
+    303: "See Other",
+    304: "Not Modified",
+    305: "Use Proxy",
+    307: "Temporary Redirect",
+    308: "Permanent Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Timeout",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Payload Too Large",
+    414: "URI Too Long",
+    415: "Unsupported Media Type",
+    416: "Range Not Satisfiable",
+    417: "Expectation Failed",
+    418: "I'm a teapot",
+    421: "Misdirected Request",
+    422: "Unprocessable Entity",
+    423: "Locked",
+    424: "Failed Dependency",
+    425: "Too Early",
+    426: "Upgrade Required",
+    428: "Precondition Required",
+    429: "Too Many Requests",
+    431: "Request Header Fields Too Large",
+    451: "Unavailable For Legal Reasons",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Timeout",
+    505: "HTTP Version Not Supported",
+    506: "Variant Also Negotiates",
+    507: "Insufficient Storage",
+    508: "Loop Detected",
+    510: "Not Extended",
+    511: "Network Authentication Required"
+}
+
+
 
 class Server(starlette.applications.Starlette):
+    
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
     def listen(self, *args, **kwargs):
         uvicorn.run(self, *args, **kwargs)
@@ -44,25 +118,75 @@ class Server(starlette.applications.Starlette):
                 }
 
                 if header_lines is not None:
-                    headers_are_valid, data = header_lines.validate(request.headers)
-
-                    if not headers_are_valid:
-                        return starlette.responses.JSONResponse({"detail": f"Invalid header `{data}`"}, status_code=422)
-
-                    path_executer_args["headers"] = data
-
-                status, headers, body = await endpoint_executer(**path_executer_args)
-                
-                if headers.get("content-type", None).startswith("application/json"):
-                    response_class = starlette.responses.JSONResponse
+                    headers_are_valid, data_or_response = header_lines.validate(request.headers)
+                    path_executer_args["headers"] = data_or_response
                 else:
-                    response_class = starlette.responses.Response
+                    headers_are_valid = True
+                    data_or_response = None
+                    
+                print(data_or_response)
 
-                return response_class(
-                    body,
-                    status_code = status,
-                    headers = headers,
-                )
+                if headers_are_valid:
+                    response = await endpoint_executer(**path_executer_args)
+                    
+                    ok, data = typedAPI.response.normalise_response(response)
+
+                    if data is None:
+                        raise TypeError('Innapropriate response.')
+                else:
+                    if data_or_response is not None:
+                        data = data_or_response 
+                    else:
+                        raise RuntimeError
+            
+
+                status, headers, body = data
+
+
+                if status == ...:
+                    status = 200
+
+                if (is_ellipsis := headers == ...) or headers.get("content-type", None) is None:
+
+                    if is_ellipsis:
+                        headers = {}
+
+                        if body == ...:
+                            body = http_status_codes[status]
+
+                    if isinstance(body, dict):
+                        headers['content-type'] =  'application/json'
+                        startlette_response = starlette.responses.JSONResponse(
+                            body, status_code = status, headers = headers,
+                        )
+
+                    elif isinstance(body, str):
+                        headers['content-type'] =  'text/plain'
+                        startlette_response = starlette.responses.Response(
+                            body, status_code = status, headers = headers,
+                        )
+                    else:
+                        raise NotImplementedError()
+
+                else:
+                    content_type = headers.get("content-type")
+                    
+                    if content_type == 'application/json':
+                        startlette_response = starlette.responses.JSONResponse(
+                            body, status_code = status, headers = headers,
+                        )
+
+                    elif content_type == 'text/plain':
+                        startlette_response = starlette.responses.Response(
+                            str(body), status_code = status, headers = headers,
+                        )
+                        
+                    else:
+                        startlette_response = starlette.responses.Response(
+                            body, status_code = status, headers = headers,
+                        )
+                
+                return startlette_response
 
             wrapper.__annotations__ = annotations
             

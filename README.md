@@ -11,23 +11,40 @@ To create a simple and intuitive way to build APIs using Python's type hinting f
 
 import typedAPI
 
-server = typedAPI.Server()
+server = typedAPI.Server({
+    'profile': 'http-openapi',
+    'defaults.request.headers': {
+        'host': lambda host: host if host == 'localhost:8000' else 503,
+        'accept': lambda accept: accept if 'text/html' in accept else 503,
+    }
+})
 
 v1 = typedAPI.ResourcePath("/api/v1")
+
+@unprotected_router.append(protocol='http')
+async def get(
+    resource_path: v1 / "test-typed-api",
+    headers: typedAPI.Headers({
+        ...: str | None
+        'Authorisation': ...,
+    }),
+):
+    return 302, { 'location': '/docs' }
 
 
 @server.append(protocol='http')
 async def get(
     resource_path: v1 / "test-typed-api" / "{some_id:int}",
     headers: typedAPI.Headers({
-        'host': lambda host: host == 'localhost:8000',
-        'accept': lambda accept: 'ext/html' in accept
-    })
+        'host': lambda host: host if host == 'localhost:8000' else 503,
+        'accept': lambda accept: accept if 'text/html' in accept else 503,
+    }),
 ):
 
-    return 200, {
-        "content-type": "application/json"
-    }, {
+    if not headers["Authorisation"].role == "ADMIN":
+        return 401
+
+    return ..., {
         "status": "OK",
         "resource_path": {
             "value": str(resource_path),
