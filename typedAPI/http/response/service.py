@@ -1,7 +1,8 @@
 
 
 from typedAPI.http.response.schema import Response, Status, Body, Headers, NormalisedResponse
-from typedAPI.http.response.factory import make_empty_reponse
+from typedAPI.http.response.factory import make_response_from_status
+from typedAPI.http.response.data import guess_content_type_from_body, cast_from_content_type
 
 
 import typing
@@ -48,6 +49,8 @@ def is_response(values: typing.Any) -> typing.TypeGuard[Response]:
 
     return True
 
+
+
 def normalise_response(response: Response) -> NormalisedResponse:
     
     if isinstance(response, int):
@@ -61,15 +64,49 @@ def normalise_response(response: Response) -> NormalisedResponse:
     return response # type: ignore
 
 
+
+
+def make_complete_headers_response(status, body_as_byes, content_type) -> starlette.responses.Response:
+    return starlette.responses.Response(
+        body_as_byes,
+        status_code = status,
+        headers = { "content-type": content_type }
+    )
+
+
 def to_starlette_response(normalised_response: NormalisedResponse) -> starlette.responses.Response:
     status, headers, body = normalised_response
-
-    if headers == None and body is None:
-        return make_empty_reponse(status)
     
     complete_headers = headers == ...
 
     complete_body = body == ...
+
+    if complete_headers:
+        if complete_body:
+            return make_response_from_status(status)
+
+        content_type = guess_content_type_from_body(body)
+        body_as_byes = cast_from_content_type(body, content_type)
+        return make_complete_headers_response(status, body_as_byes, content_type)
+    
+
+    if complete_body:
+        if (content_type := headers.get("content-type", None)) is not None:
+            return make_response_from_status(status, content_type=content_type)
+    
+    return make_response_from_complete_spec()
+
+        
+        
+        
+
+
+
+        
+
+
+    
+
     
     
 
