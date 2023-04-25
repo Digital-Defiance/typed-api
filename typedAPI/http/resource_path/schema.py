@@ -18,7 +18,7 @@ class ResourcePath(pathlib.PosixPath):
                 as_dict[name] = type
         
         return as_dict
-    
+
     
 class ResourcePathValues(pydantic.BaseModel):
     parameters: typing.Any
