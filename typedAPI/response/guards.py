@@ -4,13 +4,8 @@ from typedAPI.response.schema import UnormalisedResponse, Status, Body, Headers
 from types import EllipsisType
 
 
-
-
 def is_ellipsis(value) -> typing.TypeGuard[EllipsisType]:
     return value == ...
-
-
-
 
 
 def is_headers(value: typing.Any) -> typing.TypeGuard[Headers]:

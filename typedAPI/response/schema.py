@@ -1,9 +1,26 @@
 
 import typing
 import pydantic
-from types import EllipsisType
 
 
+class EllipsisType:
+    
+    
+    # Custom type definition, replace this with your actual ellipsis type implementation
+    def __init__(self, value: typing.Any):
+        if value != ...:
+            raise ValueError("Invalid value for EllipsisType")
+        self.value = value
+        
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: typing.Any):
+        if value != ...:
+            raise ValueError("Invalid value for EllipsisType")
+        return value
 
 
 
@@ -23,7 +40,10 @@ Body = str | dict | bytes | None
 UnormalisedResponse = Status | typing.Tuple[Status, Headers] | typing.Tuple[Status, Headers, Body]
 
 
+
 class NormalisedResponse(pydantic.BaseModel):
+    """ Datatype that typedAPI uses to represent responses. """
+    
     status: Status | EllipsisType
     header_lines: Headers | EllipsisType
     body: Body | EllipsisType | None

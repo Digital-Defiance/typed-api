@@ -5,19 +5,11 @@ import typing
 import pydantic
 
 class ResourcePath(pathlib.PosixPath):
+    """ Data type for the user to define a resource path."""
 
-    def dict(self) -> typing.Dict[str, str]:
-        
-        as_dict = {}
-        
-        for part in self.parts:
-            stripped_part = part.strip()
-            if stripped_part.startswith("{") and stripped_part.endswith("}"):
-                spec = stripped_part[1:-1]
-                name, type = spec.split(":")
-                as_dict[name] = type
-        
-        return as_dict
+    def __iter__(self):
+        # iterate self._parts
+        yield from self._parts
 
     
 class ResourcePathValues(pydantic.BaseModel):

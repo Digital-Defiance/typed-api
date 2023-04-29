@@ -24,11 +24,14 @@ def guess_body(status: Status, headers: Headers) -> Body:
 
 
 
-def make_response(status: Status, headers: Headers, body: Body) -> starlette.responses.Response:  # type: ignore
-    starlette_response = starlette.responses.Response(
-        body,
+def make_response(status: Status, headers: dict, body: Body) -> starlette.responses.Response:  # type: ignore
+    print("Making response: ", status, headers, body)
+
+    return starlette.responses.Response(
+        content = body,
         status_code = status,
-        headers = headers # type: ignore
+        headers = headers,
+        media_type=headers.get("content-type", "application/json"),
     )
 
 def guess_headers(status: Status, body: Body) -> Headers: # type: ignore

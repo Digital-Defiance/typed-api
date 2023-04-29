@@ -25,7 +25,7 @@ async def get(resource_path: v1 / "examples" / "hello-world" / "complete-respons
 # but you can ommit elements from the right, in this case no body is sent
 
 @server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "ommited body"):
+async def get(resource_path: v1 / "examples" / "hello-world" / "ommited-body"):
     return 200, {'content-type': "text/plain"}
 
 # you can also ommit other elements by using `...`. typedAPI will go ahead
