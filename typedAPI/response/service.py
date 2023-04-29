@@ -18,9 +18,11 @@ async def to_typedapi_response(
 ) -> NormalisedResponse:
     """ Generate response from starlette request and endpoint specification. """
 
+
     resource_path = typedAPI.resource_path.service.parse(endpoint_specification, request)
 
     headers = typedAPI.headers.service.parse(endpoint_specification, request)
+
 
     if headers:
         for value in headers.values():
@@ -29,9 +31,16 @@ async def to_typedapi_response(
         
     body = None
     
-    if headers is None:
-        if body is None:
-           response = await endpoint_specification.executor(resource_path)
+    match (headers, body):
+        case (None, None):
+            response = await endpoint_specification.executor(resource_path)
+        case (None, _):
+            response = await endpoint_specification.executor(resource_path, body)
+        case (_, None):
+            response = await endpoint_specification.executor(resource_path, headers)
+        case (_, _):
+            response = await endpoint_specification.executor(resource_path, headers, body)
+
 
     return to_normalised_response(response)
 
@@ -78,9 +87,15 @@ def to_starlette_response(normalised_response: NormalisedResponse) -> starlette.
         return make_response(status, headers, body)
 
     # status, ..., body
-    if headers == ... and is_body(...):
+    if headers == ... and is_body(body):
         headers = guess_headers(status, body)
+        content_type = headers.get('content-type', 'application/json')
+        body = cast_from_content_type(body, content_type)
         return make_response(status, headers, body) 
+    
+    
+
+    
     
     # status, headers, body
     content_type = headers.get('content-type', 'application/json')

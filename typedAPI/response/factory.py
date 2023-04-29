@@ -34,5 +34,15 @@ def make_response(status: Status, headers: dict, body: Body) -> starlette.respon
         media_type=headers.get("content-type", "application/json")
     )
 
-def guess_headers(status: Status, body: Body) -> Headers: # type: ignore
-    pass
+
+def guess_headers(status: Status, body: Body) -> Headers:
+    content_type = "application/octet-stream"
+
+    if isinstance(body, str):
+        content_type = "text/plain"
+    elif isinstance(body, dict):
+        content_type = "application/json"
+    elif isinstance(body, bytes):
+        content_type = "application/octet-stream"
+
+    return {"content-type": content_type}

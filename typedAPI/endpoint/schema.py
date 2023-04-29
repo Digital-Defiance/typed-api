@@ -23,6 +23,7 @@ class EndpointSpecification(pydantic.BaseModel):
             raise ValueError("Must be callable.")
 
         annotations = typing.get_type_hints(endpoint_executer)
+
     
         super().__init__(
             executor=endpoint_executer,

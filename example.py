@@ -32,19 +32,19 @@ async def get(resource_path: v1 / "examples" / "hello-world" / "ommited-body"):
 # and replace them by looking at the context, a string in the body implies `text/plain` and a `200` code
 
 @server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
+async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies-1"):
     return ..., ..., "hello world !"
 
 # if you place a dictionary in the body, typedAPI will assume application/json
 
 @server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
+async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies-2"):
     return ..., ..., { "data": "hello world !"}
 
 # resource path gives you access to queries as a pydantic model
 
 @server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
+async def get(resource_path: v1 / "examples" / "hello-world" / "with-queries"):
     return 200, ..., { "queries": resource_path.queries.dict()}
 
 # and you can also define path parameters using the notation {foo: int}
@@ -91,7 +91,7 @@ async def get(
 
 @server.append(protocol='http')
 async def get(
-    resource_path: v1 / "examples" / "hello-world" / "with-ellipsies",
+    resource_path: v1 / "examples" / "hello-world" / "auth",
     headers: typedAPI.Headers({
         'x-api-key': lambda api_key: api_key if api_key == "afajsnrars" else 401
     })
