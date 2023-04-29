@@ -73,6 +73,8 @@ def to_starlette_response(normalised_response: NormalisedResponse) -> starlette.
     # status, headers, ...
     if is_headers(headers) and body == ...:
         body = guess_body(status, headers)
+        content_type = headers.get('content-type', 'application/json')
+        body = cast_from_content_type(body, content_type)
         return make_response(status, headers, body)
 
     # status, ..., body
@@ -81,4 +83,6 @@ def to_starlette_response(normalised_response: NormalisedResponse) -> starlette.
         return make_response(status, headers, body) 
     
     # status, headers, body
+    content_type = headers.get('content-type', 'application/json')
+    body = cast_from_content_type(body, content_type)
     return make_response(status, headers, body)

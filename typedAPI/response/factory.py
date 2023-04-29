@@ -31,7 +31,7 @@ def make_response(status: Status, headers: dict, body: Body) -> starlette.respon
         content = body,
         status_code = status,
         headers = headers,
-        media_type=headers.get("content-type", "application/json"),
+        media_type=headers.get("content-type", "application/json")
     )
 
 def guess_headers(status: Status, body: Body) -> Headers: # type: ignore

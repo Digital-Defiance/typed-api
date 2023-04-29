@@ -3,6 +3,8 @@ import typing
 from typedAPI.response.schema import UnormalisedResponse, Status, Body, Headers
 from types import EllipsisType
 
+import typedAPI.response.data
+
 
 def is_ellipsis(value) -> typing.TypeGuard[EllipsisType]:
     return value == ...
@@ -12,9 +14,12 @@ def is_headers(value: typing.Any) -> typing.TypeGuard[Headers]:
     
     if not isinstance(value, dict):
         return False
-    
+
     for key in value:
         if not isinstance(key, str):
+            return False
+
+        if not isinstance(value[key], str):
             return False
 
     return True
@@ -22,7 +27,10 @@ def is_headers(value: typing.Any) -> typing.TypeGuard[Headers]:
 
 
 def is_status(value: typing.Any) -> typing.TypeGuard[Status]:
-    return isinstance(value, int)
+    if not isinstance(value, int):
+        return False
+    
+    return value in typedAPI.response.data.http_status_codes
 
 
 def is_body(value: typing.Any) -> typing.TypeGuard[Body]:
@@ -59,7 +67,7 @@ def is_response(values: typing.Any) -> typing.TypeGuard[UnormalisedResponse]:
     if size == 2:
         return True
     
-    body = values[3]
+    body = values[2]
     
     if is_body(body):
         return True
