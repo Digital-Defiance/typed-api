@@ -26,7 +26,7 @@ UnormalisedResponse = Status | typing.Tuple[Status, Headers] | typing.Tuple[Stat
 class NormalisedResponse(pydantic.BaseModel):
     status: Status | EllipsisType
     header_lines: Headers | EllipsisType
-    body: Body | None
+    body: Body | EllipsisType | None
 
 
 HttpContentType = typing.Literal[
