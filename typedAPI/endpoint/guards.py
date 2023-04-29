@@ -1,9 +1,9 @@
 
 
 import typing
-import typedAPI.http.endpoint.schema
-import typedAPI.http.endpoint.data
+import typedAPI.endpoint.schema
+import typedAPI.endpoint.data
 
 
-def is_http_method(name: typing.Any) -> typing.TypeGuard[typedAPI.http.endpoint.schema.HttpMethods]:
-    return name in typedAPI.http.endpoint.data.http_methods
+def is_http_method(name: typing.Any) -> typing.TypeGuard[typedAPI.endpoint.schema.HttpMethods]:
+    return name in typedAPI.endpoint.data.http_methods

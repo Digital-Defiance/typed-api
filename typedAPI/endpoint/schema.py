@@ -1,8 +1,8 @@
 
 import typing
 import pydantic
-import typedAPI.http.resource_path.schema
-import typedAPI.http.headers.schema
+import typedAPI.resource_path.schema
+import typedAPI.headers.schema
 
 
 
@@ -11,8 +11,8 @@ HttpMethods = typing.Literal["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS",
 
 class EndpointSpecification(pydantic.BaseModel):
     http_method: HttpMethods
-    resource_path: typedAPI.http.resource_path.schema.ResourcePath
-    header_lines: typedAPI.http.headers.schema.Headers
+    resource_path: typedAPI.resource_path.schema.ResourcePath
+    header_lines: typedAPI.headers.schema.Headers
     executor: typing.Callable
 
 

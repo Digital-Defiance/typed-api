@@ -1,6 +1,6 @@
 import typing
 
-from typedAPI.http.response.schema import UnormalisedResponse, Status, Body, Headers
+from typedAPI.response.schema import UnormalisedResponse, Status, Body, Headers
 from types import EllipsisType
 
 

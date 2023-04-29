@@ -1,22 +1,22 @@
-from typedAPI.http import resource_path
-from typedAPI.http.response.schema import  NormalisedResponse, UnormalisedResponse
-from typedAPI.http.response.guards import   is_headers, is_body, is_response, is_status
-from typedAPI.http.response.factory import guess_body, guess_headers, make_response
+
+from typedAPI.response.schema import  NormalisedResponse, UnormalisedResponse
+from typedAPI.response.guards import   is_headers, is_body, is_response, is_status
+from typedAPI.response.factory import guess_body, guess_headers, make_response
 import starlette.responses
-import typedAPI.http.headers.service
-import typedAPI.http.resource_path.service
+import typedAPI.headers.service
+import typedAPI.resource_path.service
 
 def to_typedapi_response(request, endpoint_specification, endpoint_executer) -> NormalisedResponse:
 
-    resource_path = typedAPI.http.resource_path.service.parse(endpoint_specification, request)
+    resource_path = typedAPI.resource_path.service.parse(endpoint_specification, request)
 
-    headers = typedAPI.http.headers.service.parse(endpoint_specification, request)
+    headers = typedAPI.headers.service.parse(endpoint_specification, request)
 
     for value in headers.values():
         if is_response(value):
             return to_normalised_response(value)
     
-    body = typedAPI.http.headers.service.parse(endpoint_specification, request)
+    body = typedAPI.headers.service.parse(endpoint_specification, request)
     response = endpoint_executer(resource_path, headers, body)
     return to_normalised_response(response)
 

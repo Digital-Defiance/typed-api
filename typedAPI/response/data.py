@@ -1,5 +1,5 @@
 
-from typedAPI.http.response.schema import Status
+from typedAPI.response.schema import Status
 
 http_status_codes: dict[Status, str] = {
     100: "Continue",

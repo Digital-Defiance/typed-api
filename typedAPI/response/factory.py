@@ -1,7 +1,7 @@
 import starlette.responses
-from typedAPI.http.response.data import http_status_codes
+from typedAPI.response.data import http_status_codes
 
-from typedAPI.http.response.schema import Status, Body, Headers
+from typedAPI.response.schema import Status, Body, Headers
 
 
 

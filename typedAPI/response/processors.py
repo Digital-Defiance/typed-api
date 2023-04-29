@@ -3,7 +3,7 @@ import json
 import gzip
 from io import BytesIO
 
-from typedAPI.http.response.schema import HttpContentType
+from typedAPI.response.schema import HttpContentType
 
 
 

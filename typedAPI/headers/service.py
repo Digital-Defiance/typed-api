@@ -1,5 +1,5 @@
 import starlette.requests
-from typedAPI.http.headers.schema import Headers
+from typedAPI.headers.schema import Headers
 
 
 def parse(headers: Headers, request: starlette.requests.Request):
