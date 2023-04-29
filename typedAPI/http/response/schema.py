@@ -1,20 +1,32 @@
 
 import typing
+import pydantic
+from types import EllipsisType
 
 
-EllipsisType = type(...)
-
-Status = int
-
-Headers = dict
-
-Body = str | dict | bytes
-
-Response = Status | typing.Tuple[Status, Headers] | typing.Tuple[Status, Headers, Body]
-
-NormalisedResponse = typing.Tuple[Status, Headers | EllipsisType | None, Body | EllipsisType | None]
 
 
+
+Status = typing.Literal[
+    100, 101, 102, 103,
+    200, 201, 202, 203, 204, 205, 206, 207, 208, 226,
+    300, 301, 302, 303, 304, 305, 306, 307, 308,
+    400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423, 424, 425, 426, 428, 429, 431, 451,
+    500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511
+]
+
+
+Headers = dict[str, typing.Callable | type | str] | dict[str, str]
+
+Body = str | dict | bytes | None
+
+UnormalisedResponse = Status | typing.Tuple[Status, Headers] | typing.Tuple[Status, Headers, Body]
+
+
+class NormalisedResponse(pydantic.BaseModel):
+    status: Status | EllipsisType
+    header_lines: Headers | EllipsisType
+    body: Body | None
 
 
 HttpContentType = typing.Literal[

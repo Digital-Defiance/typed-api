@@ -1,10 +1,10 @@
 
 import typing
 import pydantic
-
-import typing
 import typedAPI.http.resource_path.schema
 import typedAPI.http.headers.schema
+
+
 
 HttpMethods = typing.Literal["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS", "HEAD"]
 

@@ -2,6 +2,6 @@
 
 import starlette.requests
 
-def parse(request: starlette.requests.Request):
+def parse(endpoint_specification, request: starlette.requests.Request):
     pass
 
