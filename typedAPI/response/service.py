@@ -10,7 +10,7 @@ import typedAPI.resource_path.service
 import typedAPI.endpoint.schema
 from typedAPI.response.processors import cast_from_content_type
 import typing
-
+import typedAPI.body.service
 
 async def to_typedapi_response(
     request: starlette.requests.Request,
@@ -29,13 +29,13 @@ async def to_typedapi_response(
             if is_response(value):
                 return to_normalised_response(value)
         
-    body = None
+    body = typedAPI.body.service.parse(endpoint_specification, request)
     
     match (headers, body):
         case (None, None):
             response = await endpoint_specification.executor(resource_path)
         case (None, _):
-            response = await endpoint_specification.executor(resource_path, body)
+            raise RuntimeError("Not possible.")
         case (_, None):
             response = await endpoint_specification.executor(resource_path, headers)
         case (_, _):
@@ -47,7 +47,11 @@ async def to_typedapi_response(
 
 def to_normalised_response(unormalised_response: UnormalisedResponse) -> NormalisedResponse:
     if is_status(unormalised_response):
-        return NormalisedResponse(status=unormalised_response, header_lines=..., body=...)
+        return NormalisedResponse(
+            status=unormalised_response,
+            header_lines=...,
+            body=...,
+        )
     
     
     # why doees static analysis not work with return early, thats so dumb ._.

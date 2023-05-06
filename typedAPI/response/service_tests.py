@@ -22,7 +22,8 @@ import typedAPI
 
 root = typedAPI.ResourcePath("/")
 
-async def get(resource_path: root):
+
+async def get(resource_path: root): 
     return 200, {"content-type": "application/json"}, {"key": "value"}
 
 
@@ -62,7 +63,9 @@ def test_to_normalised_response():
 
 def test_to_starlette_response():
     normalised_response_1 = NormalisedResponse(
-        status=status.HTTP_200_OK, header_lines=..., body=...
+        status=status.HTTP_200_OK,
+        header_lines=..., # type: ignore
+        body=... # type: ignore
     )
 
     normalised_response_2 = NormalisedResponse(

@@ -11,9 +11,10 @@ from typedAPI.headers.factory import guess_processor_from_header_name, generate_
 class Headers(dict):
     def __init__(self, headers: dict[str, object]):
         
+        self.args = headers
+
         if headers == ...:
             return
-
         
         for header_name, value in headers.items():
             header_name = header_name.lower()

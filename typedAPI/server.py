@@ -13,7 +13,8 @@ import typedAPI.endpoint.service
 
 class Server(starlette.applications.Starlette):
     """ A simple wrapper around the Starlette server """
-
+    
+    
     def listen(self, *args, **kwargs) -> None:
         """ Starts the server """
 

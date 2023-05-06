@@ -19,7 +19,7 @@ class EndpointSpecification(pydantic.BaseModel):
 
     def __init__(self, endpoint_executer: typing.Any):
         
-        if not isinstance(endpoint_executer, typing.Callable):
+        if not callable(endpoint_executer):
             raise ValueError("Must be callable.")
 
         annotations = typing.get_type_hints(endpoint_executer)
