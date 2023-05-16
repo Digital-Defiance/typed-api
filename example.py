@@ -105,7 +105,7 @@ async def get(
         "headers": headers
     }
 
-"""
+
 # Now let's talk about the body 
 # the body works exactly like headers, you may ask directly for the bytes content 
 
@@ -118,6 +118,9 @@ async def post(
     
     return ..., ..., body
 
+
+
+
 # or for some other type, typedAPI will validate a serialise it
 
 @server.append(protocol='http')
@@ -129,11 +132,14 @@ async def post(
     
     return ..., ..., body
 
+
+
+
 # or use a custom processor, like in the headers case
 
 
 def bytes_is_image(body: bytes):
-    pass
+    return True
 
 @server.append(protocol='http')
 async def post(
@@ -160,6 +166,8 @@ async def post(
     return ..., ..., body
 
 
+
+"""
 # and of course, json serialisation and validation
 
 @server.append(protocol='http')

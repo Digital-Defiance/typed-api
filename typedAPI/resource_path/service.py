@@ -18,14 +18,12 @@ def parse(
 
     ResourcePathParameters = pydantic.create_model("ResourcePathParameters", **request.path_params)
     ResourcePathQueries = pydantic.create_model("ResourcePathQueries", **request.query_params)
-    
+
     resource_path_values = typedAPI.resource_path.schema.ResourcePathValues(
         parameters = ResourcePathParameters(),
         queries = ResourcePathQueries()
     )
-    
 
-    
     return resource_path_values
 
     

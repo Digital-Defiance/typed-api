@@ -97,10 +97,6 @@ def to_starlette_response(normalised_response: NormalisedResponse) -> starlette.
         body = cast_from_content_type(body, content_type)
         return make_response(status, headers, body) 
     
-    
-
-    
-    
     # status, headers, body
     content_type = headers.get('content-type', 'application/json')
     body = cast_from_content_type(body, content_type)
