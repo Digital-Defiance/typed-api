@@ -119,6 +119,94 @@ async def get(
 # is sent. 
 
 
+
+# Now let's talk about the body 
+# the body works exactly like headers, you may ask directly for the bytes content 
+
+@server.append(protocol='http')
+async def post(
+    resource_path: v1 / "tutorial" / "body" / "bytes",
+    headers: typedAPI.Headers(...),
+    body: bytes
+):
+    
+    return ..., ..., body
+
+# or for some other type, typedAPI will validate a serialise it
+
+@server.append(protocol='http')
+async def post(
+    resource_path: v1 / "tutorial" / "body" / "bytes",
+    headers: typedAPI.Headers(...),
+    body: int
+):
+    
+    return ..., ..., body
+
+# or use a custom processor, like in the headers case
+
+
+def bytes_is_image(body: bytes):
+    pass
+
+@server.append(protocol='http')
+async def post(
+    resource_path: v1 / "tutorial" / "body" / "bytes",
+    headers: typedAPI.Headers(...),
+    body: lambda content: body_is_image
+):
+
+    return ..., ..., body
+
+
+# the multipart form data
+
+@server.append(protocol='http')
+async def post(
+    resource_path: v1 / "tutorial" / "body" / "bytes",
+    headers: typedAPI.Headers(...),
+    body: typedAPI.MultiPartFormData({
+        'name': str,
+        'age': int,
+        'avatar': bytes_is_image
+    })
+):
+    return ..., ..., body
+
+
+# and of course, json serialisation and validation
+
+@server.append(protocol='http')
+async def post(
+    resource_path: v1 / "tutorial" / "body" / "json",
+    headers: typedAPI.Headers(...),
+    body: typedAPI.JSONData({
+        'email': str,
+        'password': str,
+        'personal_data': {
+            'name': str,
+            'age': int,
+            'address': {
+                'line1': str,
+                'line2': str,
+                'postal_code': str
+            },
+        }
+    })
+):
+    """ Create a new user. """
+
+    operation_result = user.service.create_new_user(
+        email = body['email'],
+        password = body['password']
+    )
+
+    if operation_result.status != 200:
+        return operation_result.status, ..., { "detail": operation_result.data }
+
+    return ..., ..., { "data": operation_result.data }
+
+
 if __name__ == "__main__":
     server.listen(host='127.0.0.1', port=8000)
 
