@@ -105,3 +105,33 @@ def test_with_api_key(client):
     headers = {'x-api-key': 'wrong_api_key'}
     response = client.get('/api/v1/examples/hello-world/auth', headers=headers)
     assert response.status_code == 401
+
+
+def test_post_bytes_body(client):
+    headers = {'Custom-Header': 'custom_value'}
+    response = client.post('/api/v1/tutorial/body/bytes', headers=headers, data=b'some bytes')
+    assert response.status_code == 200
+    assert response.content == b'some bytes'
+
+def test_post_int_body(client):
+    headers = {'Custom-Header': 'custom_value'}
+    response = client.post('/api/v1/tutorial/body/int', headers=headers, json=123)
+    assert response.status_code == 200
+    assert response.json() == 123
+
+
+def test_post_multipart_form_data(client):
+    import io
+    headers = {'Custom-Header': 'custom_value'}
+    multipart_form_data = {
+        'name': 'John',
+        'age': '30',
+        'avatar': b'asdasd'
+    }
+    response = client.post('/api/v1/tutorial/body/multipart', headers=headers, files=multipart_form_data)
+    assert response.status_code == 200
+    assert response.json() == {
+        'name': 'John',
+        'age': 30,
+        'avatar': str(b'asdasd')
+    }

@@ -1,11 +1,5 @@
-
-
-
 import typing
 from typedAPI.headers.factory import guess_processor_from_header_name, generate_processor_from_type
-
-
-
 
 
 class Headers(dict):

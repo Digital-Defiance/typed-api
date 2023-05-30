@@ -11,6 +11,8 @@ import typedAPI.endpoint.schema
 from typedAPI.response.processors import cast_from_content_type
 import typing
 import typedAPI.body.service
+import logging
+
 
 async def to_typedapi_response(
     request: starlette.requests.Request,
@@ -28,9 +30,11 @@ async def to_typedapi_response(
         for value in headers.values():
             if is_response(value):
                 return to_normalised_response(value)
-        
-    body = typedAPI.body.service.parse(endpoint_specification, request)
+
+    body = await typedAPI.body.service.parse(endpoint_specification, request)
     
+    
+    logging.debug(f"{headers=} {body=}")
     match (headers, body):
         case (None, None):
             response = await endpoint_specification.executor(resource_path)
@@ -40,7 +44,6 @@ async def to_typedapi_response(
             response = await endpoint_specification.executor(resource_path, headers)
         case (_, _):
             response = await endpoint_specification.executor(resource_path, headers, body)
-
 
     return to_normalised_response(response)
 

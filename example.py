@@ -125,7 +125,7 @@ async def post(
 
 @server.append(protocol='http')
 async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
+    resource_path: v1 / "tutorial" / "body" / "int",
     headers: typedAPI.Headers(...),
     body: int
 ):
@@ -135,35 +135,25 @@ async def post(
 
 
 
-# or use a custom processor, like in the headers case
-
-
-def bytes_is_image(body: bytes):
-    return True
-
-@server.append(protocol='http')
-async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
-    headers: typedAPI.Headers(...),
-    body: lambda content: body_is_image
-):
-
-    return ..., ..., body
-
 
 # the multipart form data
 
 @server.append(protocol='http')
 async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
+    resource_path: v1 / "tutorial" / "body" / "multipart",
     headers: typedAPI.Headers(...),
     body: typedAPI.MultiPartFormData({
         'name': str,
         'age': int,
-        'avatar': bytes_is_image
+        'avatar': bytes
     })
 ):
-    return ..., ..., body
+    
+    return ..., ..., {
+        'name': body["name"],
+        'age': body['age'],
+        'avatar': str(body['avatar']),
+    }
 
 
 

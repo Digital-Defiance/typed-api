@@ -1,6 +1,7 @@
 """
 This module contains the Server class.
 """
+import typedAPI.log_config
 
 import typing
 
@@ -9,6 +10,9 @@ import starlette.responses
 import uvicorn
 
 import typedAPI.endpoint.service
+
+
+
 
 
 class Server(starlette.applications.Starlette):

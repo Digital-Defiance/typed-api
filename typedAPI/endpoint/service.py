@@ -15,8 +15,6 @@ import typedAPI.response.schema
 def generate_full_executor(endpoint_executer: typing.Callable) -> typing.Tuple[typing.Callable, EndpointSpecification]:
     """ Wraps the user defined executor. """
     
-
-
     endpoint_specification = EndpointSpecification(endpoint_executer)
 
     @functools.wraps(endpoint_executer)
