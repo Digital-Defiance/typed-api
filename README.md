@@ -1,185 +1,40 @@
 # Typed-API
 
-A lightweight Python backend framework that leverages Python's type hinting to concisely define an API. Heavily inspired by FastAPI.
+Typed-API is a lightweight Python backend framework designed with simplicity and power in mind. Drawing its inspiration from the popular FastAPI, Typed-API uses Python's type hinting feature to create an intuitive and straight-forward method to build APIs. It provides a range of features that enables you to define your API's structure with clear syntax while harnessing the power of Python's type system.
 
-## Goal
+## Features
 
-To create a simple and intuitive way to build APIs using Python's type hinting feature.
+- **Path Parameters**: Define and access path parameters using the notation `{foo: int}`, providing clear access to URL parameters in your API.
+- **Query Parameters**: Get hands on the query parameters as a Pydantic model, empowering you to leverage the power of data validation that Pydantic provides.
+- **Headers**: Access to headers with the ability to provide your own validation function, providing robust and flexible request handling.
+- **Body Content**: Support various body types such as bytes, JSON, and multipart form data. This feature ensures that you can handle a variety of data inputs to your API.
 
-```Python
+## Quick Start
 
-# type: ignore
+Setting up a Typed-API server is simple. Here's how you can define an endpoint in just a few lines of code:
 
-import typedAPI
+```python
+import typedAPI  # Import the library
 
-server = typedAPI.Server()
+server = typedAPI.Server()  # Initialize a server
+v1 = typedAPI.ResourcePath("/api/v1")  # Define a versioned API path
 
-v1 = typedAPI.ResourcePath("/api/v1")
-
-
-
-# This is the simplest form
-
+# A simple endpoint definition
 @server.append(protocol='http')
 async def get(resource_path: v1 / "examples" / "hello-world"):
     return 200
+```
 
+This will set up an HTTP GET endpoint at "/api/v1/examples/hello-world" that returns a 200 status code.
 
-# the complete way to define a response is like so
+## Advanced Example
 
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "complete-response"):
-    return 200, {'content-type': "text/plain"}, "hello world !"
+For a more in-depth example, consider the case where we want to define a POST endpoint that accepts JSON data. We want to use Typed-API's JSONData function to define and validate the data we're expecting:
 
-
-# but you can ommit elements from the right, in this case no body is sent
-
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "ommited body"):
-    return 200, {'content-type': "text/plain"}
-
-# you can also ommit other elements by using `...`. typedAPI will go ahead
-# and replace them by looking at the context, a string in the body implies `text/plain` and a `200` code
-
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
-    return ..., ..., "hello world !"
-
-# if you place a dictionary in the body, typedAPI will assume application/json
-
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
-    return ..., ..., { "data": "hello world !"}
-
-# resource path gives you access to queries as a pydantic model
-
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
-    return 200, ..., { "queries": resource_path.queries.dict()}
-
-# and you can also define path parameters using the notation {foo: int}
-
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
-    return 200, ..., { 
-        "queries": resource_path.queries.dict(),
-        "parameters": resource_path.parameters.dict(),
-    }
-    
-# you can leave the 200, but the default parameters are something you are
-# able to change at various levels, so it is good practice to do DRY and 
-# just leave `...`
-
-@server.append(protocol='http')
-async def get(resource_path: v1 / "examples" / "hello-world" / "with-ellipsies"):
-    return ..., ..., { 
-        "queries": resource_path.queries.dict(),
-        "parameters": resource_path.parameters.dict(),
-    }
-
-
-# if you want access to the headers:
-
-@server.append(protocol='http')
-async def get(
-    resource_path: v1 / "examples" / "hello-world" / "with-ellipsies",
-    headers: typedAPI.Headers(...)
-):
-    return ..., ..., { 
-        "resource_path":{
-            "queries": resource_path.queries.dict(),
-            "parameters": resource_path.parameters.dict(),
-        },
-        "headers": headers
-    }
-
-# here, `...` has the same meaning, typedAPI will fill in the details
-# in this case it just passes everything
-
-# but let's say you want to do something with the headers, maybe
-# validate an api key ? 
-
-@server.append(protocol='http')
-async def get(
-    resource_path: v1 / "examples" / "hello-world" / "with-ellipsies",
-    headers: typedAPI.Headers({
-        'x-api-key': lambda api_key: api_key if api_key == "afajsnrars" else 401
-    })
-):
-    return ..., ..., { 
-        "resource_path":{
-            "queries": resource_path.queries.dict(),
-            "parameters": resource_path.parameters.dict(),
-        },
-        "headers": headers
-    }
-
-# note how the anonymous function may return a response like object, in this
-# case an integer. When the anonymous function returns a reponse, that response
-# is sent. 
-
-
-
-# Now let's talk about the body 
-# the body works exactly like headers, you may ask directly for the bytes content 
-
+```python
 @server.append(protocol='http')
 async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
-    headers: typedAPI.Headers(...),
-    body: bytes
-):
-    
-    return ..., ..., body
-
-# or for some other type, typedAPI will validate a serialise it
-
-@server.append(protocol='http')
-async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
-    headers: typedAPI.Headers(...),
-    body: int
-):
-    
-    return ..., ..., body
-
-# or use a custom processor, like in the headers case
-
-
-def bytes_is_image(body: bytes):
-    pass
-
-@server.append(protocol='http')
-async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
-    headers: typedAPI.Headers(...),
-    body: lambda content: body_is_image
-):
-
-    return ..., ..., body
-
-
-# the multipart form data
-
-@server.append(protocol='http')
-async def post(
-    resource_path: v1 / "tutorial" / "body" / "bytes",
-    headers: typedAPI.Headers(...),
-    body: typedAPI.MultiPartFormData({
-        'name': str,
-        'age': int,
-        'avatar': bytes_is_image
-    })
-):
-    return ..., ..., body
-
-
-# and of course, json serialisation and validation
-
-@server.append(protocol='http')
-async def post(
-    resource_path: v1 / "tutorial" / "body" / "json",
-    headers: typedAPI.Headers(...),
+    resource_path: v1 / "users" / "create",
     body: typedAPI.JSONData({
         'email': str,
         'password': str,
@@ -195,7 +50,6 @@ async def post(
     })
 ):
     """ Create a new user. """
-
     operation_result = user.service.create_new_user(
         email = body['email'],
         password = body['password']
@@ -205,13 +59,12 @@ async def post(
         return operation_result.status, ..., { "detail": operation_result.data }
 
     return ..., ..., { "data": operation_result.data }
-
-
-if __name__ == "__main__":
-    server.listen(host='127.0.0.1', port=8000)
-
 ```
 
-# License
+In this example, the POST endpoint at "/api/v1/users/create" will expect a JSON body with specific fields. The function `typedAPI.JSONData` validates the received data structure. If the validation is successful, it will pass the data to the handler function; if not, it will automatically respond with an appropriate error message.
 
-This project is licensed under the MIT License
+## License
+
+This project is licensed under the MIT License.
+
+The above examples provide a quick glimpse into Typed-API's capabilities. For a comprehensive guide and more detailed examples, please refer to the [Typed-API documentation](link_to_documentation). Typed-API is continually evolving, adding new features, and improving existing ones to provide the best experience for Python API development.
