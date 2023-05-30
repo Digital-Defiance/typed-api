@@ -4,6 +4,8 @@ import os
 
 VERSION = os.getenv('PACKAGE_VERSION', None)
 
+print(f"{VERSION=}")
+
 if VERSION is None:
   raise RuntimeError('`PACKAGE_VERSION` not defined.')
 
