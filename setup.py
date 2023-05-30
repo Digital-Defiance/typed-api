@@ -8,7 +8,7 @@ if VERSION is None:
   raise RuntimeError('`PACKAGE_VERSION` not defined.')
 
 setup(
-    name='typed-api',
+    name='typed-api-framework',
     version=VERSION,
     description='A lightweigt package for concisely defining an api.',
     author='Rui Filipe de Sousa Campos @ Digital Defiance',
