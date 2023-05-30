@@ -27,12 +27,27 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
+        
+    - name: Set version to release tag
+      id: set_version_tag
+      run: echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+      if: github.event_name == 'release'
+
+    - name: Set version to branch name
+      id: set_version_branch
+      run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      if: github.event_name != 'release'
+        
     - name: Install dependencies
+      env:
+        PACKAGE_VERSION: ${{ steps.vars.outputs.version }}
       run: |
         python -m pip install --upgrade pip
         pip install build
+
     - name: Build package
       run: python -m build
+
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
