@@ -45,7 +45,7 @@ jobs:
 
     - name: Build package
       env:
-        PACKAGE_VERSION: ${{ steps.vars.outputs.version }}
+        PACKAGE_VERSION: ${{ env.VERSION }}
       run: python -m build
 
     - name: Publish package
