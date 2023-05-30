@@ -15,6 +15,8 @@ setup(
     author_email='mail@ruicampos.org',
     url='https://github.com/Digital-Defiance/typed-api',
     packages=find_packages(),
+    long_description="A lightweigt package for concisely defining an api.",
+    long_description_content_type="text/markdown",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
