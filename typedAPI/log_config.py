@@ -22,10 +22,3 @@ logging.basicConfig(
 logging.getLogger().handlers[0].setFormatter(CustomFormatter(
     '%(levelname)-8s %(pathname)s:%(funcName)s:%(lineno)-40d %(message)s'
 ))
-
-# Log some messages
-logging.debug('This is a debug message')
-logging.info('This is an informational message')
-logging.warning('This is a warning message')
-logging.error('This is an error message')
-logging.critical('This is a critical message')
