@@ -27,5 +27,6 @@ setup(
     install_requires=[
         'starlette>=0.27.0',
         'pydantic>=1.10.8',
+        'uvicorn>=0.22.0',
     ],
 )
