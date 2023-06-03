@@ -24,4 +24,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.11',
     ],
+    install_requires=[
+        'starlette>=0.27.0',
+        'pydantic>=1.10.8',
+    ],
 )
