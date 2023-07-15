@@ -197,40 +197,41 @@ class TypedAPI:
 
 
 
-app = TypedAPI()
-v1 = ResourcePath("/api/v1")
 
-@app.http
-def get(
-    resource_path: v1 / "a",
-    headers: {
-        'host': str
-    },
-    body: ...
-):
-    print("???", headers)
-    return 200, ..., { "test": 123 }
-
-
-@app.http
-def post(
-    resource_path: v1 / "a",
-    headers: {
-        'host': str
-    },
-    body: [
-        ('test1', int),
-        ('test2', str)
-    ]
-):
-    print("???", headers)
-    print("body??????", body)
-    return 200, ..., { "test": 123 }
-
-
-
-# Run the server using uvicorn
 if __name__ == "__main__":
+    app = TypedAPI()
+    v1 = ResourcePath("/api/v1")
+
+    @app.http
+    def get(
+        resource_path: v1 / "a",
+        headers: {
+            'host': str
+        },
+        body: ...
+    ):
+        print("???", headers)
+        return 200, ..., { "test": 123 }
+
+
+    @app.http
+    def post(
+        resource_path: v1 / "a",
+        headers: {
+            'host': str
+        },
+        body: [
+            ('test1', int),
+            ('test2', str)
+        ]
+    ):
+        print("???", headers)
+        print("body??????", body)
+        return 200, ..., { "test": 123 }
+
+
+    
+    
     import uvicorn
     uvicorn.run(app.app, host="0.0.0.0", port=8000)
 
