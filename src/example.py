@@ -1,20 +1,22 @@
-from starlette.applications import Starlette
-from starlette.routing import Route
-from starlette.responses import Response, JSONResponse
-from starlette.requests import Request
-from pydantic import ValidationError
-
-from typing import Any, Callable, Type, Dict, Union
+# Standard library imports
+from typing import Any, Callable, Dict, List, Type, Union
 import inspect
-from pydantic import create_model, BaseModel
-from typing import Any
 import json
 
+# Third-party module imports
+from pydantic import create_model, ValidationError, BaseModel, Field
+from starlette.applications import Starlette
+from starlette.exceptions import HTTPException
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
+from starlette.routing import Route
+import starlette.datastructures
 
 
-
-
-
+class SpecificationError(Exception):
+    ...
+    
+    
 status_to_message = {
     100: "Continue",
     101: "Switching Protocols",
@@ -41,6 +43,54 @@ status_to_message = {
 }
 
 
+
+
+def dict_to_model(data: Dict[str, Any], name: str="DynamicModel") -> BaseModel:
+    """Generate a Pydantic model from a dictionary."""
+
+    if data == ...:
+        data = {}
+    
+    annotations = {}
+    for key, value in data.items():
+        if isinstance(value, dict):
+            annotations[key] = (dict_to_model(value, key), ...)
+        elif isinstance(value, list) and len(value) == 1 and isinstance(value[0], dict):
+            annotations[key] = (List[dict_to_model(value[0], key)], ...)
+        else:
+            annotations[key] = (value, ...)
+
+    return create_model(name, **annotations)
+
+
+
+def validate_content_type(request: Request, content_type):
+    req_content_type = request.headers.get('Content-Type')
+
+    if not req_content_type or content_type not in req_content_type:
+        raise HTTPException(400, f'Invalid `Content-Type` header. Must be `{content_type}`')
+
+async def get_request_body_as_bytes(request: Request) -> bytes:
+    return await request.body()
+
+async def get_request_body_as_json(request: Request):
+    validate_content_type("application/json")
+    try:
+        return await request.json()
+    except json.decoder.JSONDecodeError:
+        raise HTTPException(422, "Request body is not a valid JSON.")
+    
+async def get_request_body_as_form(request: Request) -> list[tuple[str, Any]]:
+    validate_content_type("multipart/form-data")
+    try:
+        form_data = await request.form()
+        return form_data.multi_items()
+    except Exception as e:
+        raise HTTPException(422, "Request body is not a valid form.")
+    
+    
+    
+
 class ResourcePath:
     def __init__(self, path: str):
         self.path = path
@@ -61,25 +111,50 @@ class TypedAPI:
         signature = inspect.signature(func)
         params = signature.parameters
 
+
         # RESOURCE PATH VALIDATOR
         assert 'resource_path' in params
         resource_path = params['resource_path'].annotation
         assert isinstance(resource_path, ResourcePath)
         path = resource_path.path
 
+
         # HEADERS VALIDATOR
         assert "headers" in params
         headers_spec = params['headers'].annotation
-        if headers_spec == ...:
-            headers_spec = {}
-        formatted_dict = {k: (v, ...) for k, v in headers_spec.items()}
-        headers_model = create_model('Headers', **formatted_dict)
+        headers_model = dict_to_model(headers_spec, name="Headers")
 
-        # BODY VALIDATOR
-        assert "body" in params
-        body = params['body'].annotation
-        if body == ...:
-            body = None
+
+        # CONSTRUCT BODY VALIDATORS
+        if "body" not in params:
+            raise SpecificationError("Endpoint spec must have a body parameter.")
+
+        req_body_spec = params['body'].annotation
+
+        if req_body_spec in [..., bytes]:
+            get_request_body = get_request_body_as_bytes
+
+        elif req_body_spec == dict:
+            get_request_body = get_request_body_as_json
+
+        elif isinstance(req_body_spec, dict):
+            body_spec = dict_to_model(req_body_spec, name="BodySpec")
+            async def get_request_body(request: Request) -> dict:
+                req_body = await get_request_body_as_json(request)
+                try:
+                    body_spec(**req_body)
+                except ValidationError as exception:
+                    raise HTTPException(422, str(exception.errors()))
+
+        elif req_body_spec == list:
+            get_request_body = get_request_body_as_form
+
+        elif isinstance(req_body_spec, list):
+            raise NotImplementedError("Coming soon...")
+
+        else:
+            raise NotImplementedError("Requested body spec is not implemented, nor is it a planned feature.")
+
 
         async def starlette_handler(request: Request):
 
@@ -88,18 +163,9 @@ class TypedAPI:
             try:
                 request_headers_obj = headers_model(**request_headers)
             except ValidationError as exception:
-                return JSONResponse( exception.errors())
+                return JSONResponse(exception.errors())
 
-            if body == bytes or body == ...:
-                request_body = await request.body()
-            elif body == dict:
-                try:
-                    request_body = await request.json()
-                except json.decoder.JSONDecodeError:
-                    return JSONResponse({"error": "Body not valid json."})
-            else:
-                raise NotImplementedError("Not implemented")
-
+            request_body = await get_request_body(request)
             status_code, response_headers, response_body = func(path, request_headers, request_body)
             
             if status_code == ...:
@@ -109,15 +175,13 @@ class TypedAPI:
                 response_headers = None
 
             if response_body == ...:
-                print(status_code)
                 response_body = str(status_code) + " " + status_to_message[status_code]
                 ResponseType = Response
-                
+
             if isinstance(response_body, dict):
                 ResponseType = JSONResponse
-                
+
             response = ResponseType(response_body, status_code=status_code, headers=response_headers)
-            print(response.headers)
             return response
 
         route = Route(path, starlette_handler, methods=[method_name])
@@ -126,20 +190,70 @@ class TypedAPI:
         return starlette_handler
 
 
+
+
+
+
+
+
+
+
 app = TypedAPI()
 v1 = ResourcePath("/api/v1")
 
 @app.http
 def get(
     resource_path: v1 / "a",
-    headers: ...,
-    body: dict
+    headers: {
+        'host': int
+    },
+    body: ...
 ):
     print("???", headers)
     return 200, ..., { "test": 123 }
+
+
+@app.http
+def post(
+    resource_path: v1 / "a",
+    headers: {
+        'host': int
+    },
+    body: {
+        'name': str,
+        'age': int,
+        "extra_info": {
+            'location': tuple[int, int, int]
+        }
+    }
+):
+    print("???", headers)
+    print(body)
+    return 200, ..., { "test": 123 }
+
+
+
+
+
+# Use the function
+schema = {
+    'name': str,
+    'location': tuple[int, int, int],
+    'extra_info': {
+         'age': int
+    }
+}
+
+DynamicModel = dict_to_model(schema)
+print(DynamicModel.schema())
+
+
 
 
 # Run the server using uvicorn
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app.app, host="0.0.0.0", port=8000)
+
+
+    
