@@ -23,10 +23,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
+
         
     - name: Set version to release tag
       id: set_version_tag
@@ -35,8 +38,14 @@ jobs:
 
     - name: Set version to branch name
       id: set_version_branch
-      run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
       if: github.event_name != 'release'
+      run: |
+        REF_NAME=${{ github.ref_name }}  # The original ref_name
+        REF_NAME=${REF_NAME////}  # Remove all '/'
+        COMMIT_HASH="$(echo ${{ github.sha }} | cut -c 1-7)"
+        LAST_TAG="$(git describe --tags `git rev-list --tags --max-count=1`)"
+        echo "VERSION=$LAST_TAG.$REF_NAME$COMMIT_HASH" >> $GITHUB_ENV
+      
         
     - name: Install dependencies
       run: |
