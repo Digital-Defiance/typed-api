@@ -74,22 +74,20 @@ async def get_request_body_as_bytes(request: Request) -> bytes:
     return await request.body()
 
 async def get_request_body_as_json(request: Request):
-    validate_content_type("application/json")
+    validate_content_type(request, "application/json")
     try:
         return await request.json()
-    except json.decoder.JSONDecodeError:
+    except json.decoder.JSONDecodeError as exception:
+        print(exception)
         raise HTTPException(422, "Request body is not a valid JSON.")
     
 async def get_request_body_as_form(request: Request) -> list[tuple[str, Any]]:
-    validate_content_type("multipart/form-data")
+    validate_content_type(request, "multipart/form-data")
     try:
         form_data = await request.form()
         return form_data.multi_items()
     except Exception as e:
         raise HTTPException(422, "Request body is not a valid form.")
-    
-    
-    
 
 class ResourcePath:
     def __init__(self, path: str):
@@ -143,6 +141,7 @@ class TypedAPI:
                 req_body = await get_request_body_as_json(request)
                 try:
                     body_spec(**req_body)
+                    return req_body
                 except ValidationError as exception:
                     raise HTTPException(422, str(exception.errors()))
 
@@ -150,14 +149,21 @@ class TypedAPI:
             get_request_body = get_request_body_as_form
 
         elif isinstance(req_body_spec, list):
-            raise NotImplementedError("Coming soon...")
-
+            field_dict = {name: (type_, ...) for name, type_ in req_body_spec}
+            body_spec = create_model('BodySpec', **field_dict)
+            async def get_request_body(request: Request) -> dict:
+                req_body = await get_request_body_as_form(request)
+                req_body_dict = {name: value for name, value in req_body}
+                try:
+                    body_spec(**req_body_dict)
+                    return req_body
+                except ValidationError as exception:
+                    raise HTTPException(422, str(exception.errors()))
         else:
             raise NotImplementedError("Requested body spec is not implemented, nor is it a planned feature.")
 
 
         async def starlette_handler(request: Request):
-
             request_headers = dict(request.headers)
             
             try:
@@ -191,13 +197,6 @@ class TypedAPI:
 
 
 
-
-
-
-
-
-
-
 app = TypedAPI()
 v1 = ResourcePath("/api/v1")
 
@@ -205,7 +204,7 @@ v1 = ResourcePath("/api/v1")
 def get(
     resource_path: v1 / "a",
     headers: {
-        'host': int
+        'host': str
     },
     body: ...
 ):
@@ -217,36 +216,16 @@ def get(
 def post(
     resource_path: v1 / "a",
     headers: {
-        'host': int
+        'host': str
     },
-    body: {
-        'name': str,
-        'age': int,
-        "extra_info": {
-            'location': tuple[int, int, int]
-        }
-    }
+    body: [
+        ('test1', int),
+        ('test2', str)
+    ]
 ):
     print("???", headers)
-    print(body)
+    print("body??????", body)
     return 200, ..., { "test": 123 }
-
-
-
-
-
-# Use the function
-schema = {
-    'name': str,
-    'location': tuple[int, int, int],
-    'extra_info': {
-         'age': int
-    }
-}
-
-DynamicModel = dict_to_model(schema)
-print(DynamicModel.schema())
-
 
 
 
