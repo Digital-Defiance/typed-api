@@ -39,7 +39,7 @@ jobs:
 
     - name: Set version to branch name
       id: set_version_branch
-      run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      run: echo "VERSION=$(git describe --tags `git rev-list --tags --max-count=1`).dev-${{ github.ref_name }}" >> $GITHUB_ENV
       if: github.event_name != 'release'
         
     - name: Install dependencies
