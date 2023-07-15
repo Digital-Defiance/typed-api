@@ -42,7 +42,7 @@ jobs:
 
     - name: Set version to branch name
       id: set_version_branch
-      run: echo "VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)+${{ github.ref_name }}.${{ github.sha }}.substring(0,7)" >> $GITHUB_ENV
+      run: echo "VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)+${{ github.ref_name }}-${{ github.sha.substring(0,7) }}" >> $GITHUB_ENV
       if: github.event_name != 'release'
         
     - name: Install dependencies
