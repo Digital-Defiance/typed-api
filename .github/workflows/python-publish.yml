@@ -12,6 +12,10 @@ on:
   workflow_dispatch:
   release:
     types: [published]
+  pull_request:
+  push:
+    branches:
+      - develop
 
 permissions:
   contents: read
