@@ -23,7 +23,7 @@ setup(
         'Programming Language :: Python :: 3.11',
     ],
     install_requires=[
-        'starlette==0.30.0',
+        'starlette==0.36.2',
         'pydantic==1.10.8',
         'uvicorn==0.22.0',
     ],
